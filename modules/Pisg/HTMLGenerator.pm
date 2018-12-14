@@ -45,7 +45,7 @@ sub create_output
 
     # save table width as multiplie files would just increase tablewidth
     my $tablewidth_original = $self->{cfg}->{tablewidth};
-    
+
     # remove old iconv if it exist as it could mess up recode.
     delete $self->{iconv} if $self->{iconv};
 
@@ -217,13 +217,13 @@ sub _htmlheader
 
     my $CSS;
     if($self->{cfg}->{colorscheme} =~ /([^\/.]+)\.[^\/]+$/) { # use external CSS file
-        $CSS = "<link rel=\"stylesheet\" type=\"text/css\" title=\"$1\" href=\"$self->{cfg}->{colorscheme}\" />";
+        $CSS = "<link crossorigin rel=\"stylesheet\" title=\"$1\" href=\"$self->{cfg}->{colorscheme}\" />";
     } elsif($self->{cfg}->{colorscheme} ne "none") { # read the chosen CSS file
         my $css_file = $self->{cfg}->{cssdir} . $self->{cfg}->{colorscheme} . ".css";
         open(FILE, $css_file) or open (FILE, $self->{cfg}->{search_path} . "/$css_file") or die("$0: Unable to open stylesheet $css_file: $!\n");
         {
             local $/; # enable "slurp" mode
-            $CSS = "<style type=\"text/css\" title=\"$self->{cfg}->{colorscheme}\">\n". <FILE>. "</style>";
+            $CSS = "<style title=\"$self->{cfg}->{colorscheme}\">\n". <FILE>. "</style>";
 			$CSS =~ s/\/\*/\/\* <!--/g;
 			$CSS =~ s/\*\//--> \*\//g;
         }
@@ -234,17 +234,18 @@ sub _htmlheader
     if($self->{cfg}->{altcolorscheme} ne "none" and $self->{cfg}->{altcolorscheme} =~ /[^\w]/) {
         foreach (split /\s+/, $self->{cfg}->{altcolorscheme}) {
             /([^\/.]+)\.[^\/]+$/;
-            $CSS .= "\n<link rel=\"alternate stylesheet\" type=\"text/css\" title=\"$1\" href=\"$_\" />";
+            $CSS .= "\n<link crossorigin rel=\"alternate stylesheet\" title=\"$1\" href=\"$_\" />";
         }
     }
 
     my $title = $self->_template_text('pagetitle1', %hash);
     if($self->{cfg}->{colorscheme} ne "none") {
         _html( <<HTML );
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta http-equiv="Content-Type" content="text/html; charset=$self->{cfg}->{charset}" />
+<meta charset="$self->{cfg}->{charset}" />
+<meta name="viewport" content="width=720" />
 <title>$title</title>
 $CSS
 </head>
@@ -341,7 +342,7 @@ HTML
         $self->{cfg}->{nicktracking},
         $self->{cfg}->{timeoffset}
     ));
-    
+
     if($self->{cfg}->{colorscheme} ne "none") {
         _html( <<HTML );
 </div>
@@ -531,7 +532,7 @@ sub _activenicks
     $output .= "<td class=\"tdtop\"><b>" . $self->_template_text('show_cpl') . "</b></td>"      if ($self->{cfg}->{showcpl});
     $output .= "<td class=\"tdtop\"><b>" . $self->_template_text('show_lastseen') . "</b></td>" if ($self->{cfg}->{showlastseen});
     $output .= "<td class=\"tdtop\"><b>" . $self->_template_text('randquote') . "</b></td>"     if ($self->{cfg}->{showrandquote});
-    
+
     $output .= "\n";
 
     my @active;
@@ -609,13 +610,13 @@ sub _activenicks
             }
         }
 
-        _html("<tr><td class=\"$class\" align=\"left\">$c</td>");
+        _html("<tr class=\"hicell\"><td class=\"$class\" align=\"left\">$c</td>");
 
         my $line = $self->{stats}->{lines}{$nick};
         my $w = $self->{stats}->{words}{$nick} ? $self->{stats}->{words}{$nick} : 0;
         my $ch   = $self->{stats}->{lengths}{$nick};
         my $sex = $self->{users}->{sex}{$nick};
-        
+
         my $output = '';
         $output .= "<td $style>";
 
@@ -649,11 +650,11 @@ sub _activenicks
                 $output .= "<td $style>$w</td>";
             }
         }
-        
+
         $output .= "<td $style>" . sprintf("%.1f", $w/$line) . "</td>"  if ($self->{cfg}->{showwpl});
         $output .= "<td $style>" . sprintf("%.1f", $ch/$line) . "</td>" if ($self->{cfg}->{showcpl});
         $output .= "<td $style>$lastseen</td>"                          if ($self->{cfg}->{showlastseen});
-        $output .= "<td $style>\"$randomline\"</td>"                    if ($self->{cfg}->{showrandquote});
+        $output .= "<td $style><q>$randomline</q></td>"                    if ($self->{cfg}->{showrandquote});
 
         _html($output);
         undef $output;
@@ -1105,7 +1106,7 @@ sub _mostmonologues
     # The person who had the most monologues (speaking to himself)
     my $self = shift;
 
-    my @monologue = sort { $self->{stats}->{monologues}{$b} <=> $self->{stats}->{monologues}{$a} } 
+    my @monologue = sort { $self->{stats}->{monologues}{$b} <=> $self->{stats}->{monologues}{$a} }
                            keys %{ $self->{stats}->{monologues} };
 
     @monologue = $self->_istoponly(@monologue);
@@ -1707,7 +1708,7 @@ sub _format_line
     } elsif ($hashref = $self->{cfg}->{analyzer}->{parser}->thirdline($line)) {
         if (defined($hashref->{kicker})) {
             $line = '*** ' . $hashref->{nick} . ' was kicked by ' . $hashref->{kicker};
-            $line .= ' (' . $hashref->{kicktext} . ')' 
+            $line .= ' (' . $hashref->{kicktext} . ')'
                 if (defined($hashref->{kicktext}));
         } elsif (defined($hashref->{newtopic})) {
             $line = '*** ' . $hashref->{nick} . ' changes topic to \'' . $hashref->{newtopic} . '\'';
@@ -2070,7 +2071,7 @@ sub _charts
             my $chartcount = $self->{stats}->{chartcounts}{$song};
             my $lastused = $self->{stats}->{chartnicks}{$song};
             $song = $self->{stats}->{word_upcase}{$song};
-            $song = substr($song, 0, 60) if (length($song) > 60);
+            #$song = substr($song, 0, 60) if (length($song) > 60);
             $song = $self->_format_word($song);
             my $class = ($a == 1) ? 'hirankc' : 'rankc';
             _html("<tr><td class=\"$class\">$a</td>");
@@ -2197,10 +2198,10 @@ sub _user_times
     my ($nick) = @_;
 
     my $bar = "";
-    
+
     my $itemstat = ($self->{cfg}->{sortbywords} ? 'words' : 'lines');
     my $timestat = ($self->{cfg}->{sortbywords} ? 'word_times' : 'line_times');
-    
+
     for (my $i = 0; $i <= 3; $i++) {
         my $l = $self->{stats}->{$timestat}{$nick}[$i];
         next if not defined $l;
@@ -2241,7 +2242,7 @@ sub _user_pic
     my $width = $self->{cfg}->{picwidth} ? " width=\"$self->{cfg}->{picwidth}\"" : "";
     my $alt = $self->{users}->{userpics}{$nick} ? " alt=\"$nick\" title=\"$nick\"" : ' alt=""';
     my $border = $biguserpic ? ' border="0"' : '';
-    $output .= "<img src=\"$pic\"$width$height$alt$border />";
+    $output .= "<img crossorigin class=\"userpic\" src=\"$pic\"$width$height$alt$border />";
 
     $output .= "</a>" if $biguserpic;
     _html("$output</td>");
@@ -2252,7 +2253,7 @@ sub _mostnicks
     # List showing the user with most used nicks
     my $self = shift;
 
-    my @sortnicks = sort { keys %{ $self->{stats}->{nicks}->{$b} } <=> keys %{ $self->{stats}->{nicks}->{$a} } } 
+    my @sortnicks = sort { keys %{ $self->{stats}->{nicks}->{$b} } <=> keys %{ $self->{stats}->{nicks}->{$a} } }
                                 keys %{ $self->{stats}->{nicks} };
 
     if (keys %{ $self->{stats}->{nicks}->{$sortnicks[0]} } > 1) {
@@ -2281,7 +2282,7 @@ sub _mostnicks
             my $n = $nickcount > 1 ? $names1 : $names2;
 
             _html("<tr><td class=\"$class\">$a</td>");
-            if ($self->{cfg}->{mostnicksverbose}) { 
+            if ($self->{cfg}->{mostnicksverbose}) {
                 _html("<td class=\"hicell\">$nick ($nickcount $n)</td>");
                 _html("<td class=\"hicell\" valign='top'>$nickused</td>");
             } else {
@@ -2390,29 +2391,29 @@ sub _topactive {
     my $top_nicks;
 
     if ($self->{cfg}->{sortbywords}) {
-        @top_active = sort { $self->{stats}->{words}{$b} <=> $self->{stats}->{words}{$a} } 
+        @top_active = sort { $self->{stats}->{words}{$b} <=> $self->{stats}->{words}{$a} }
                              keys %{ $self->{stats}->{words} };
         $top_nicks = scalar keys %{ $self->{stats}->{words} };
     } else {
-        @top_active = sort { $self->{stats}->{lines}{$b} <=> $self->{stats}->{lines}{$a} } 
+        @top_active = sort { $self->{stats}->{lines}{$b} <=> $self->{stats}->{lines}{$a} }
                              keys %{ $self->{stats}->{lines} };
         $top_nicks = scalar keys %{ $self->{stats}->{lines} };
-    }   
-            
+    }
+
     if ($self->{cfg}->{activenicks} > $top_nicks) {
         $self->{cfg}->{activenicks} = $top_nicks;
-    } 
+    }
     if (($self->{cfg}->{activenicks}+$self->{cfg}->{activenicks2}) > $top_nicks) {
         $self->{cfg}->{activenicks2} = $top_nicks-$self->{cfg}->{activenicks};
     }
-            
+
     (@top_active) = @top_active[0..($self->{cfg}->{activenicks}-1)];
     $self->{stats}->{topactive_lines} = @top_active ? $self->{stats}->{lines}{$top_active[0]} : 1;
-            
+
     foreach (@top_active) {
         $self->{topactive}{$_} = 1;
     }
-} 
+}
 
 
 sub _istoponly {

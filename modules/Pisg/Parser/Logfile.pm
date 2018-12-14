@@ -684,7 +684,7 @@ sub _charts
     $Song =~ s/^ *[^\w]* *| *[^\w]* *$//g;
 
     return unless length $Song;
-    
+
     my $song = lc $Song;
     $stats->{word_upcase}{$song} = $Song;
     $stats->{chartcounts}{$song}++;
@@ -800,7 +800,7 @@ sub _adjusttimeoffset
 sub _read_cache
 {
     my ($self, $statsref, $linesref, $logfile) = @_;
-    my $csum = (split(' ', `sum -s $logfile`))[0];
+    my $csum = (split(' ', `cksum $logfile`))[0];
     my $cachefile = $logfile;
     $cachefile =~ s/[^\w-]/_/go;
     $cachefile = "$self->{cfg}->{cachedir}/$cachefile";
@@ -825,7 +825,7 @@ sub _read_cache
 sub _update_cache
 {
     my ($self, $stats, $lines, $logfile) = @_;
-    my $csum = (split(' ', `sum -s $logfile`))[0];
+    my $csum = (split(' ', `cksum $logfile`))[0];
     my $cachefile = $logfile;
     $cachefile =~ s/[^\w-]/_/g;
     $cachefile = "$self->{cfg}->{cachedir}/$cachefile";
