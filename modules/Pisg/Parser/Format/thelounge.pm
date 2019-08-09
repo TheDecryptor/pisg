@@ -77,7 +77,7 @@ sub thirdline
              $hash{nick} = $1;
              $hash{newtopic} = $2;
 
-        } elsif ($3 =~ /^(\S+) sets channel \S+ mode (\S+) (.+)/) {
+        } elsif ($3 =~ /^(\S+) set mode (\S+) (.+)/) {
              $hash{nick} = $1;
              $hash{newmode} = $2;
              $hash{modechanges} = $3;
