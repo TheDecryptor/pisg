@@ -70,8 +70,8 @@ sub thirdline
 
         if ($3 =~ /^(\S+) was kicked by (\S+) \((.+)\)/) {
             $hash{nick} = $1;
-            $hash{kicker} = $3;
-            $hash{kicktext} = $4;
+            $hash{kicker} = $2;
+            $hash{kicktext} = $3;
 
         } elsif ($3 =~ /^(\S+) changed topic to '(.+)'/) {
              $hash{nick} = $1;
